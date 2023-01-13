@@ -14,7 +14,18 @@ const participantSchema = joi.object({
 }
 );
 
+const mongoClient = new MongoClient(process.env.MONGO_URI)
+
+try{
+    await mongoClient.connect();
+    console.log("Mongo connected")
+}catch(er) {
+    console.log(err);
+}
+
+const db = mongoClient.db("batepapouol");
+
 app.post("/participants", async (req, res) => {
-});                 / 
+});                 
 
 app.listen(5000, () => console.log("Rodando a porta 5000. Sucesso!!!"))
