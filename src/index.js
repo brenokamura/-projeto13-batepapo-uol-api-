@@ -134,4 +134,19 @@ app.get('/messages', async (req, res) => {
 	}
 });
 
+app.post("/status", async (req, res) => {
+	try {
+	const {participant} = req.headers;	
+		const isParticipant = await db.collection("participants").findOne({ name: participant.name })
+		if (!isParticipant) {
+			res.sendStatus(404);
+			return;
+		}
+		await db.collection("participants").updateOne({ name: participant }, {$set: { lastStatus: Date.now() } });
+		res.sendStatus(200);
+	} catch (error) {
+		res.status(500).send(error.message);
+	}
+});
+
 app.listen(5000, () => console.log("Rodando a porta 5000. Sucesso!!!"))
