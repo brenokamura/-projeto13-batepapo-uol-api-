@@ -149,4 +149,27 @@ app.post("/status", async (req, res) => {
 	}
 });
 
+setInterval(async () => {
+	try {
+	const time = Date.now() - 10 * 1000; 
+	  const participants = await db.collection("participants").find({ lastStatus: { $lte: time } }).toArray();
+	  if (participants.length > 0) {
+		const messages = participants.map(
+		  (participant) => {
+			return {
+			  from: participant.name,
+			  to: "Todos",
+			  text: "sai da sala...",
+			  type: "status",
+			  time: dayjs().format("HH:mm:ss"),
+			};
+		});
+		await db.collection("participants").deleteMany({ lastStatus: { $lte: time } });
+		await db.collection("messages").insertMany(messages);
+	  }
+	} catch (err) {
+	  res.sendStatus(500);
+	}
+  }, 15000);
+
 app.listen(5000, () => console.log("Rodando a porta 5000. Sucesso!!!"))
