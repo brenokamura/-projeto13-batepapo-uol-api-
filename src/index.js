@@ -80,4 +80,29 @@ app.get('/participants', async (req, res) => {
 		res.sendStatus(500);
 	}
 });
+
+app.post("/messages", async (req, res) => {
+    try
+    {
+        const { to, text, type } = req.body;
+        const from = req.headers.user;
+
+        if (!await db.collection("participants").findOne({ name: from })) return res.sendStatus(422);
+        const messageSchema = joi.object({
+            to: joi.string().required(),
+            text: joi.string().required(),
+            type: joi.string().valid('message', 'private_message').required(),
+            from: joi.string().required()
+        });
+
+        const message = { to, text, type, from };
+        const validation = messageSchema.validate(message, { abortEarly: false });
+        if (validation.error) return res.status(422).send(validation.error);
+        await db.collection("messages").insertOne({...message, time: dayjs().format("hh:mm:ss")});
+        res.sendStatus(201);
+    } catch (err)
+    {
+        return res.status(422).send(err.message);
+    }
+});
 app.listen(5000, () => console.log("Rodando a porta 5000. Sucesso!!!"))
